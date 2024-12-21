@@ -24,10 +24,40 @@ const redisClient = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
+
+// Create a custom store adapter for Upstash Redis
+class UpstashRedisStore extends RedisStore {
+  constructor(options) {
+    super({
+      ...options,
+      client: {
+        ...options.client,
+        // Add compatibility methods for connect-redis
+        get: async (key) => {
+          const result = await options.client.get(key);
+          return result;
+        },
+        set: async (key, value, opts) => {
+          if (opts && opts.EX) {
+            await options.client.set(key, value, { ex: opts.EX });
+          } else {
+            await options.client.set(key, value);
+          }
+        },
+        del: async (key) => {
+          await options.client.del(key);
+        },
+      },
+    });
+  }
+}
 // Verify Redis connection
 const verifyRedisConnection = async () => {
   try {
-    await redisClient.ping();
+    const testKey = 'test-connection';
+    await redisClient.set(testKey, 'test');
+    await redisClient.get(testKey);
+    await redisClient.del(testKey);
     logger.info('Redis connection successful');
     return true;
   } catch (error) {
@@ -44,31 +74,15 @@ app.use(
 );
 const PORT = process.env.PORT;
 app.use(express.json());
-// Modified session middleware to include error handling
+// Session middleware with Upstash Redis Store
 app.use(
   session({
     store:
       process.env.NODE_ENV === 'production'
-        ? new RedisStore({
+        ? new UpstashRedisStore({
             client: redisClient,
             prefix: 'session:',
-            ttl: 86400,
-            // Add error handling for Redis store
-            retry_strategy: function (options) {
-              if (options.error && options.error.code === 'ECONNREFUSED') {
-                logger.error('Redis connection refused');
-                return new Error('Redis connection refused');
-              }
-              if (options.total_retry_time > 1000 * 60 * 60) {
-                logger.error('Redis retry time exhausted');
-                return new Error('Redis retry time exhausted');
-              }
-              if (options.attempt > 10) {
-                logger.error('Redis max retries reached');
-                return new Error('Redis max retries reached');
-              }
-              return Math.min(options.attempt * 100, 3000);
-            },
+            ttl: 86400, // 24 hours in seconds
           })
         : undefined,
     secret: process.env.SESSION_SECRET,
