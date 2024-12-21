@@ -1,10 +1,47 @@
 import express from 'express';
 import 'module-alias/register';
-import userRoutes from '@routes/userRoutes';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import authRoutes from '@routes/authRoutes';
 import logger from '@config/logger';
+import session from 'express-session';
+import passport from 'passport';
+import passportConfig from '@config/passport';
+import connectDB from '@config/database';
+
+// Load environment variables
+dotenv.config();
+
 const app = express();
-const PORT = process.env.PORT || 8000;
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+  }),
+);
+
+const PORT = process.env.PORT;
+
 app.use(express.json());
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      httpOnly: true, // Prevents JavaScript access
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
+  }),
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+passportConfig(passport);
 
 // Add error handling middleware
 const errorHandler = (err, req, res, next) => {
@@ -33,14 +70,31 @@ app.use((req, res, next) => {
   });
   next();
 });
+
 // Routes
-app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
+
 // Test route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Express Server with Alias support!' });
 });
+
 // Add error handling middleware last
 app.use(errorHandler);
-app.listen(PORT, () => {
-  logger.info(`Server is running on port ${PORT}`);
-});
+
+// Modified server startup
+const startServer = async () => {
+  try {
+    await connectDB();
+    logger.info('Connected to MongoDB');
+
+    app.listen(PORT, () => {
+      logger.info(`Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    logger.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
