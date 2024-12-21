@@ -5,12 +5,6 @@ export const isAuthenticated = (req, res, next) => {
   if (!req.isAuthenticated()) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-
-  // Additional security checks
-  if (!req.user.is_email_verified) {
-    return res.status(403).json({ error: 'Email not verified' });
-  }
-
   // Check if session is expired
   const sessionAge = req.session.cookie.maxAge;
   if (sessionAge <= 0) {
@@ -18,3 +12,25 @@ export const isAuthenticated = (req, res, next) => {
   }
   next();
 };
+
+// New separate middleware for email verification
+export const isEmailVerified = (req, res, next) => {
+  logger.info('isEmailVerified middleware', req.user);
+
+  // First ensure user is authenticated
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  // Check email verification
+  if (!req.user.is_email_verified) {
+    return res.status(403).json({
+      error: 'Email not verified',
+      message: 'Please verify your email to access this resource',
+      requiresVerification: true,
+    });
+  }
+  next();
+};
+
+// Combine both checks if needed
+export const isAuthenticatedAndVerified = [isAuthenticated, isEmailVerified];

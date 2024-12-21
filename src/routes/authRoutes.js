@@ -1,11 +1,17 @@
 import express from 'express';
 import passport from 'passport';
 import { isAuthenticated } from '@middlewares/authMiddleware';
+import { uploadMiddleware } from '@middlewares/uploadMiddleware';
+import { registerSchema, loginSchema } from '@utils/validationSchemas';
+import validateRequest from '@middlewares/validationMiddleware';
+
 import {
   googleCallback,
   logout,
   getCurrentUser,
   handleAuthError,
+  register,
+  login,
 } from '@controllers/authController';
 
 const router = express.Router();
@@ -33,6 +39,20 @@ router.get(
   }),
   googleCallback,
 );
+
+// Register with credentials
+/**
+ * URL: /api/auth/register
+ * Method: POST
+ * */
+router.post('/register', uploadMiddleware.single.image, validateRequest(registerSchema), register);
+
+// Login with credentials
+/**
+ * URL: /api/auth/login
+ * Method: POST
+ * */
+router.post('/login', validateRequest(loginSchema), login);
 
 // Logout route
 /**
