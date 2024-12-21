@@ -27,5 +27,16 @@ export const isEmailVerified = (req, res, next) => {
   next();
 };
 
+export const isAdmin = (req, res, next) => {
+  if (!req.user || req.user.user_type !== 'admin') {
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: 'Admin access required',
+    });
+  }
+  next();
+};
+
 // Combine both checks if needed
 export const isAuthenticatedAndVerified = [isAuthenticated, isEmailVerified];
+export const isAuthenticatedVerifiedAdmin = [isAuthenticated, isEmailVerified, isAdmin];

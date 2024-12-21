@@ -59,3 +59,11 @@ export const resetPasswordSchema = z
     message: "Passwords don't match",
     path: ['confirmPassword'],
   });
+
+// Add this to your existing validation schemas
+export const onboardingSchema = z.object({
+  bio: z.string().max(2000, 'Bio must be less than 2000 characters'),
+  interests: z
+    .array(z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid interest ID'))
+    .min(1, 'Select at least one interest'),
+});

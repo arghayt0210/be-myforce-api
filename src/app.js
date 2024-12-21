@@ -6,6 +6,7 @@ import session from 'express-session';
 import passport from 'passport';
 
 import { killProcessOnPort } from '@utils/portUtil';
+import { seedInterests } from '@utils/seedInterests';
 
 import logger from '@config/logger';
 import passportConfig from '@config/passport';
@@ -14,6 +15,8 @@ import connectDB from '@config/database';
 import authRoutes from '@routes/authRoutes';
 import verificationRoutes from '@routes/verificationRoutes';
 import passwordRoutes from '@routes/passwordRoutes';
+import userRoutes from '@routes/userRoutes';
+import masterRoutes from '@routes/masterRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -79,8 +82,10 @@ app.use((req, res, next) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/master', masterRoutes);
 app.use('/api/verification', verificationRoutes);
 app.use('/api/password', passwordRoutes);
+app.use('/api/users', userRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -103,6 +108,14 @@ const startServer = async () => {
     }
     await connectDB();
     logger.info('Connected to MongoDB');
+    // Seed interests after database connection
+    try {
+      await seedInterests();
+      logger.info('Interests seeded successfully');
+    } catch (seedError) {
+      logger.error('Error seeding interests:', seedError);
+      // Continue server startup even if seeding fails
+    }
     server = app.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);
     });
