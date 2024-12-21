@@ -18,10 +18,24 @@ import passwordRoutes from '@routes/passwordRoutes';
 import userRoutes from '@routes/userRoutes';
 import masterRoutes from '@routes/masterRoutes';
 
+import { Redis } from '@upstash/redis';
+import { RedisStore } from 'connect-redis';
+
 // Load environment variables
 dotenv.config();
-
 const app = express();
+
+// Initialize Redis client with Upstash
+const redisClient = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
+// Initialize Redis Store
+const redisStore = new RedisStore({
+  client: redisClient,
+  prefix: 'session:',
+});
 
 app.use(
   cors({
@@ -37,6 +51,7 @@ app.use(express.json());
 
 app.use(
   session({
+    store: process.env.NODE_ENV === 'production' ? redisStore : undefined,
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
