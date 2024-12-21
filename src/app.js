@@ -70,6 +70,7 @@ app.use(
     origin: process.env.FRONTEND_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
 const PORT = process.env.PORT;
@@ -96,7 +97,7 @@ app.use(
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       domain:
         process.env.NODE_ENV === 'production'
-          ? process.env.COOKIE_DOMAIN // Add this to your .env
+          ? '.onrender.com' // Add this to your .env
           : undefined,
       path: '/',
     },

@@ -160,7 +160,18 @@ export const logout = (req, res) => {
       if (err) {
         return res.status(500).json({ error: 'Error destroying session' });
       }
-      res.clearCookie('connect.sid');
+      // Clear cookie based on environment
+      if (process.env.NODE_ENV === 'production') {
+        res.clearCookie('connect.sid', {
+          domain: '.onrender.com',
+          path: '/',
+          secure: true,
+          httpOnly: true,
+          sameSite: 'none',
+        });
+      } else {
+        res.clearCookie('connect.sid');
+      }
       res.json({ message: 'Logged out successfully' });
     });
   });
