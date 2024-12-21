@@ -127,9 +127,18 @@ export const login = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      return res.json({
-        message: 'Logged in successfully',
-        user,
+      // Ensure session is saved before sending response
+      req.session.save((err) => {
+        if (err) {
+          return next(err);
+        }
+        // Remove sensitive information
+        const userResponse = user.toObject();
+        delete userResponse.password;
+        return res.json({
+          message: 'Logged in successfully',
+          user: userResponse,
+        });
       });
     });
   } catch (error) {

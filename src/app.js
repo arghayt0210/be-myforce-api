@@ -88,16 +88,24 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    proxy: true, // Required for secure cookies behind a proxy/load balancer
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production', // true in production
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      domain:
+        process.env.NODE_ENV === 'production'
+          ? process.env.COOKIE_DOMAIN // Add this to your .env
+          : undefined,
+      path: '/',
     },
     rolling: true,
     unset: 'destroy',
   }),
 );
+// Add trust proxy setting if you're behind a proxy (like Render, Heroku, etc.)
+app.set('trust proxy', 1);
 app.use(passport.initialize());
 app.use(passport.session());
 passportConfig(passport);
