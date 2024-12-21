@@ -1,7 +1,4 @@
-import logger from '@config/logger';
-
 export const isAuthenticated = (req, res, next) => {
-  logger.info('isAuthenticated middleware', req.user);
   if (!req.isAuthenticated()) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -15,8 +12,6 @@ export const isAuthenticated = (req, res, next) => {
 
 // New separate middleware for email verification
 export const isEmailVerified = (req, res, next) => {
-  logger.info('isEmailVerified middleware', req.user);
-
   // First ensure user is authenticated
   if (!req.isAuthenticated()) {
     return res.status(401).json({ error: 'Unauthorized' });

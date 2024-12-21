@@ -2,12 +2,15 @@ import express from 'express';
 import 'module-alias/register';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import authRoutes from '@routes/authRoutes';
-import logger from '@config/logger';
 import session from 'express-session';
 import passport from 'passport';
+
+import logger from '@config/logger';
 import passportConfig from '@config/passport';
 import connectDB from '@config/database';
+
+import authRoutes from '@routes/authRoutes';
+import verificationRoutes from '@routes/verificationRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -73,6 +76,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/verification', verificationRoutes);
 
 // Test route
 app.get('/', (req, res) => {

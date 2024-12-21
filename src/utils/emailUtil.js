@@ -20,7 +20,25 @@ const emailTemplates = {
      </div>
    `,
   }),
-  // Add more email templates here
+  verifyEmail: ({ userName, otp }) => ({
+    subject: 'Verify Your Email - BeMyForce',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Email Verification</h2>
+        <p>Hi ${userName},</p>
+        <p>Your email verification OTP is:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <div style="background-color: #f4f4f4; padding: 12px 20px; 
+                      font-size: 24px; font-weight: bold; letter-spacing: 5px;">
+            ${otp}
+          </div>
+        </div>
+        <p>This OTP will expire in 10 minutes.</p>
+        <p>If you didn't request this verification, please ignore this email.</p>
+        <p>Best regards,<br>The BeMyForce Team</p>
+      </div>
+    `,
+  }),
 };
 
 export const sendEmail = async ({ to, template, data }) => {

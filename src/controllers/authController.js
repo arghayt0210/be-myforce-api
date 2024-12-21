@@ -15,7 +15,7 @@ export const googleCallback = async (req, res) => {
       data: req.user.full_name || req.user.username,
     });
   }
-  res.redirect(process.env.FRONTEND_URL + '/dashboard');
+  res.redirect(process.env.FRONTEND_URL + '/onboarding');
 };
 
 /** 
@@ -61,6 +61,18 @@ export const register = async (req, res, next) => {
       to: user.email,
       template: 'welcome',
       data: user.full_name || user.username,
+    });
+
+    // Send verification email
+    const otp = user.generateOTP();
+    await user.save();
+    await sendEmail({
+      to: user.email,
+      template: 'verifyEmail',
+      data: {
+        userName: user.full_name || user.username,
+        otp: otp,
+      },
     });
 
     // Log the user in by starting a session
