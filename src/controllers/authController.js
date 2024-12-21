@@ -163,7 +163,7 @@ export const logout = (req, res) => {
       // Clear cookie based on environment
       if (process.env.NODE_ENV === 'production') {
         res.clearCookie('connect.sid', {
-          domain: '.onrender.com',
+          domain: 'onrender.com',
           path: '/',
           secure: true,
           httpOnly: true,

@@ -97,7 +97,7 @@ app.use(
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       domain:
         process.env.NODE_ENV === 'production'
-          ? '.onrender.com' // Add this to your .env
+          ? 'onrender.com' // Add this to your .env
           : undefined,
       path: '/',
     },
