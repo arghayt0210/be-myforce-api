@@ -31,11 +31,23 @@ const redisClient = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
+// Verify Redis connection
+const verifyRedisConnection = async () => {
+  try {
+    await redisClient.ping();
+    logger.info('Redis connection successful');
+    return true;
+  } catch (error) {
+    logger.error('Redis connection failed:', error);
+    return false;
+  }
+};
+
 // Initialize Redis Store
-const redisStore = new RedisStore({
-  client: redisClient,
-  prefix: 'session:',
-});
+// const redisStore = new RedisStore({
+//   client: redisClient,
+//   prefix: 'session:',
+// });
 
 app.use(
   cors({
@@ -51,14 +63,22 @@ app.use(express.json());
 
 app.use(
   session({
-    store: process.env.NODE_ENV === 'production' ? redisStore : undefined,
+    store:
+      process.env.NODE_ENV === 'production'
+        ? new RedisStore({
+            client: redisClient,
+            prefix: 'session:',
+            ttl: 86400, // 24 hours in seconds
+          })
+        : undefined,
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-      httpOnly: true, // Prevents JavaScript access
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     },
   }),
 );
@@ -114,6 +134,13 @@ app.use(errorHandler);
 let server;
 const startServer = async () => {
   try {
+    // Verify Redis connection in production
+    if (process.env.NODE_ENV === 'production') {
+      const redisConnected = await verifyRedisConnection();
+      if (!redisConnected) {
+        throw new Error('Redis connection failed');
+      }
+    }
     // Try to kill any existing process, but don't worry if none found
     await killProcessOnPort(PORT);
 
