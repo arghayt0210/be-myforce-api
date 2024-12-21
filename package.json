@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/app.js",
-    "dev": "nodemon --exec babel-node src/app.js --watch src",
+    "dev": "node --watch --require @babel/register src/app.js",
     "build": "babel src -d dist",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
@@ -37,6 +37,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@babel/register": "^7.25.9",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-standard": "^17.1.0",
@@ -44,7 +45,6 @@
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-promise": "^6.6.0",
-    "nodemon": "^3.1.9",
     "prettier": "^3.4.2"
   },
   "_moduleAliases": {

@@ -39,6 +39,38 @@ const emailTemplates = {
       </div>
     `,
   }),
+  resetPassword: ({ userName, resetToken }) => ({
+    subject: 'Reset Your Password - BeMyForce',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Password Reset Request</h2>
+        <p>Hi ${userName},</p>
+        <p>We received a request to reset your password. Click the button below to set a new password:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <a href="${process.env.FRONTEND_URL}/reset-password/${resetToken}" 
+             style="background-color: #4CAF50; color: white; padding: 12px 20px; 
+                    text-decoration: none; border-radius: 4px;">
+            Reset Password
+          </a>
+        </div>
+        <p>This link will expire in 30 minutes.</p>
+        <p>If you didn't request this reset, please ignore this email.</p>
+        <p>Best regards,<br>The BeMyForce Team</p>
+      </div>
+    `,
+  }),
+  passwordChanged: ({ userName }) => ({
+    subject: 'Password Changed Successfully - BeMyForce',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Password Changed Successfully</h2>
+        <p>Hi ${userName},</p>
+        <p>Your password has been changed successfully.</p>
+        <p>If you didn't make this change, please contact our support team immediately.</p>
+        <p>Best regards,<br>The BeMyForce Team</p>
+      </div>
+    `,
+  }),
 };
 
 export const sendEmail = async ({ to, template, data }) => {

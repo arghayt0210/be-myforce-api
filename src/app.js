@@ -5,12 +5,15 @@ import dotenv from 'dotenv';
 import session from 'express-session';
 import passport from 'passport';
 
+import { killProcessOnPort } from '@utils/portUtil';
+
 import logger from '@config/logger';
 import passportConfig from '@config/passport';
 import connectDB from '@config/database';
 
 import authRoutes from '@routes/authRoutes';
 import verificationRoutes from '@routes/verificationRoutes';
+import passwordRoutes from '@routes/passwordRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -74,9 +77,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/verification', verificationRoutes);
+app.use('/api/password', passwordRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -87,18 +91,72 @@ app.get('/', (req, res) => {
 app.use(errorHandler);
 
 // Modified server startup
+let server;
 const startServer = async () => {
   try {
+    // Try to kill any existing process, but don't worry if none found
+    await killProcessOnPort(PORT);
+
+    // Ensure previous server instance is closed
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+    }
     await connectDB();
     logger.info('Connected to MongoDB');
-
-    app.listen(PORT, () => {
+    server = app.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);
+    });
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE') {
+        logger.warn(`Port ${PORT} is busy, retrying in 1 second...`);
+        setTimeout(() => {
+          server.close();
+          server.listen(PORT);
+        }, 1000);
+      } else {
+        logger.error('Server error:', error);
+      }
     });
   } catch (error) {
     logger.error('Failed to start server:', error);
-    process.exit(1);
+    // Don't exit process during development
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    }
   }
 };
+
+// Graceful shutdown
+const shutdown = async () => {
+  try {
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+      logger.info('Server closed gracefully');
+    }
+  } catch (error) {
+    logger.error('Error during shutdown:', error);
+  } finally {
+    process.exit(0);
+  }
+};
+
+// Handle termination signals
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+
+// Handle uncaught errors without crashing in development
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  if (process.env.NODE_ENV === 'production') {
+    shutdown();
+  }
+});
+
+process.on('unhandledRejection', (error) => {
+  logger.error('Unhandled Rejection:', error);
+  if (process.env.NODE_ENV === 'production') {
+    shutdown();
+  }
+});
 
 startServer();
