@@ -1,5 +1,5 @@
-import transporter from '@config/email';
-import logger from '@utils/logger';
+import transporter from '@config/email.config';
+import logger from '@/utils/logger.util';
 
 interface EmailTemplate {
   subject: string;
