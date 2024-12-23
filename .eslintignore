@@ -1,0 +1,35 @@
+# Build output
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.*
+
+# Config files
+*.config.js
+*.config.ts
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+
+# Coverage directory
+coverage/
+
+# Logs
+logs/
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# Other
+.DS_Store
+*.pem 
+
+.eslintrc.js

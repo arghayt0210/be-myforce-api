@@ -1,0 +1,39 @@
+# Build output
+dist/
+build/
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment and config files
+.env
+.env.*
+*.config.js
+*.config.ts
+
+# Coverage and test files
+coverage/
+*.test.ts
+*.spec.ts
+
+# Logs
+logs/
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# Other
+.DS_Store
+*.pem
+*.md
+.gitignore
+.prettierignore
+.eslintignore
+
+# Generated files
+tsconfig.tsbuildinfo 
+
+.eslintrc.js

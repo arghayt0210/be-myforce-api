@@ -1,4 +1,4 @@
-import mongoose, { Document, Model } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 // Interface for Interest document
 interface IInterest extends Document {
@@ -8,10 +8,7 @@ interface IInterest extends Document {
   updatedAt: Date;
 }
 
-// Interface for Interest Model (if you need static methods later)
-interface IInterestModel extends Model<IInterest> {}
-
-const interestSchema = new mongoose.Schema<IInterest, IInterestModel>(
+const interestSchema = new mongoose.Schema<IInterest>(
   {
     name: {
       type: String,
@@ -26,11 +23,9 @@ const interestSchema = new mongoose.Schema<IInterest, IInterestModel>(
       trim: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true },
 );
 
-const Interest = mongoose.model<IInterest, IInterestModel>('Interest', interestSchema);
+const Interest = mongoose.model<IInterest>('Interest', interestSchema);
 
 export default Interest;

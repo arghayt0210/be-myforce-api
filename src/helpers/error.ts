@@ -2,9 +2,9 @@ import express from 'express';
 
 export class ErrorHandler extends Error {
   statusCode: number;
-  errors?: any;
+  errors?: Record<string, unknown>;
 
-  constructor(statusCode: number, message: string, errors?: any) {
+  constructor(statusCode: number, message: string, errors?: Record<string, unknown>) {
     super();
     this.statusCode = statusCode;
     this.message = message;
@@ -12,9 +12,8 @@ export class ErrorHandler extends Error {
   }
 }
 
-export const handleError = (err: any, res: express.Response): void => {
+export const handleError = (err: Error | ErrorHandler, res: express.Response): void => {
   if (err instanceof ErrorHandler) {
-    // Handle our custom errors
     res.status(err.statusCode).json({
       success: false,
       message: err.message,
@@ -22,7 +21,6 @@ export const handleError = (err: any, res: express.Response): void => {
       statusCode: err.statusCode,
     });
   } else {
-    // Handle unexpected errors
     console.error('Unexpected error:', err);
     res.status(500).json({
       success: false,

@@ -2,12 +2,7 @@
   "compilerOptions": {
     "target": "es2017",
     "module": "commonjs",
-    "lib": [
-      "dom",
-      "es6",
-      "es2017",
-      "esnext.asynciterable"
-    ],
+    "lib": ["dom", "es6", "es2017", "esnext.asynciterable"],
     "skipLibCheck": true,
     "sourceMap": true,
     "outDir": "./dist",
@@ -28,42 +23,19 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@models/*": [
-        "src/models/*"
-      ],
-      "@controllers/*": [
-        "src/controllers/*"
-      ],
-      "@middlewares/*": [
-        "src/middlewares/*"
-      ],
-      "@utils/*": [
-        "src/utils/*"
-      ],
-      "@config/*": [
-        "src/config/*"
-      ],
-      "@routes/*": [
-        "src/routes/*"
-      ],
-      "@helpers/*": [
-        "src/helpers/*"
-      ],
-      "@handlers/*": [
-        "src/handlers/*"
-      ],
-      "@services/*": [
-        "src/services/*"
-      ]
+      "@/*": ["src/*"],
+      "@models/*": ["src/models/*"],
+      "@controllers/*": ["src/controllers/*"],
+      "@middlewares/*": ["src/middlewares/*"],
+      "@utils/*": ["src/utils/*"],
+      "@config/*": ["src/config/*"],
+      "@routes/*": ["src/routes/*"],
+      "@helpers/*": ["src/helpers/*"],
+      "@handlers/*": ["src/handlers/*"],
+      "@services/*": ["src/services/*"],
+      "@schemas/*": ["src/schemas/*"]
     }
   },
-  "exclude": [
-    "node_modules"
-  ],
-  "include": [
-    "./src/**/*.ts"
-  ]
+  "exclude": ["node_modules"],
+  "include": ["./src/**/*.ts"]
 }

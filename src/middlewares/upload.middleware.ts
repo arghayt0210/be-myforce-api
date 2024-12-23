@@ -11,7 +11,7 @@ const fileFilter = (
   _req: Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback,
-  isMultiple = false
+  isMultiple = false,
 ) => {
   if (isMultiple) {
     // For multiple uploads - allow both images and videos

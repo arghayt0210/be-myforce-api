@@ -95,17 +95,7 @@ const emailTemplates: EmailTemplates = {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Onboarding Complete! 🎉</h2>
         <p>Hi ${data.userName},</p>
-        <p>Thank you for completing your profile setup! Your selected interests are:</p>
-        <ul style="list-style-type: none; padding: 0;">
-          ${data.interests
-            ?.map(
-              (interest) =>
-                `<li style="background-color: #f0f0f0; margin: 5px 0; padding: 8px; border-radius: 4px;">
-              ${interest}
-            </li>`,
-            )
-            .join('')}
-        </ul>
+        <p>Thank you for completing your profile setup!</p>
         <p>You're all set to start exploring BeMyForce! Here are some things you can do:</p>
         <ul>
           <li>Connect with others who share your interests</li>

@@ -35,7 +35,7 @@ interface IUser extends Document {
 }
 
 // Interface for User Model
-interface IUserModel extends Model<IUser, {}, IUserMethods> {
+interface IUserModel extends Model<IUser, Record<string, never>, IUserMethods> {
   findByEmail(email: string): Promise<IUser | null>;
 }
 
@@ -61,7 +61,7 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>(
     },
     password: {
       type: String,
-      required: function(this: IUser) {
+      required: function (this: IUser) {
         return !this.google_id;
       },
     },
@@ -104,11 +104,11 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Pre-save middleware
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password!, salt);
@@ -117,34 +117,34 @@ userSchema.pre('save', async function(next) {
 });
 
 // Methods
-userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, this.password!);
 };
 
-userSchema.methods.generateOTP = function(): string {
+userSchema.methods.generateOTP = function (): string {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   this.otp = otp;
   this.otp_expires = new Date(Date.now() + 10 * 60 * 1000);
   return otp;
 };
 
-userSchema.methods.verifyOTP = function(otp: string): boolean {
+userSchema.methods.verifyOTP = function (otp: string): boolean {
   return this.otp === otp && Date.now() <= this.otp_expires!.getTime();
 };
 
-userSchema.methods.generatePasswordResetToken = function(): string {
+userSchema.methods.generatePasswordResetToken = function (): string {
   const resetToken = crypto.randomBytes(32).toString('hex');
   this.reset_password_token = crypto.createHash('sha256').update(resetToken).digest('hex');
   this.reset_password_expires = new Date(Date.now() + 30 * 60 * 1000);
   return resetToken;
 };
 
-userSchema.methods.isGoogleUser = function(): boolean {
+userSchema.methods.isGoogleUser = function (): boolean {
   return Boolean(this.google_id);
 };
 
 // Statics
-userSchema.statics.findByEmail = function(email: string) {
+userSchema.statics.findByEmail = function (email: string) {
   return this.findOne({ email: email.toLowerCase() });
 };
 

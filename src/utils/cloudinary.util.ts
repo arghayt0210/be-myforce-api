@@ -23,7 +23,7 @@ interface CloudinaryOptions {
  */
 export const singleFileUpload = async (
   file: UploadedFile,
-  options: CloudinaryOptions
+  options: CloudinaryOptions,
 ): Promise<CloudinaryUploadResult> => {
   try {
     if (!file?.buffer) {
@@ -54,7 +54,7 @@ export const singleFileUpload = async (
  */
 export const multiFileUpload = async (
   files: UploadedFile[],
-  options: CloudinaryOptions
+  options: CloudinaryOptions,
 ): Promise<CloudinaryUploadResult[]> => {
   try {
     if (!Array.isArray(files) || files.length === 0) {
@@ -72,9 +72,7 @@ export const multiFileUpload = async (
 /**
  * Delete a single file from Cloudinary
  */
-export const deleteSingleUpload = async (
-  publicId: string
-): Promise<DeleteApiResponse> => {
+export const deleteSingleUpload = async (publicId: string): Promise<DeleteApiResponse> => {
   try {
     const result = await cloudinary.uploader.destroy(publicId);
     return result;
@@ -87,9 +85,7 @@ export const deleteSingleUpload = async (
 /**
  * Delete multiple files from Cloudinary
  */
-export const deleteMultipleUpload = async (
-  publicIds: string[]
-): Promise<DeleteApiResponse> => {
+export const deleteMultipleUpload = async (publicIds: string[]): Promise<DeleteApiResponse> => {
   try {
     const result = await cloudinary.api.delete_resources(publicIds);
     return result;

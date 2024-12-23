@@ -4,15 +4,23 @@ import path from 'path';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import http from 'http';
+import cors from 'cors';
+import corsOptions from '@config/cors.config';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 import { handleError } from '@helpers/error';
 import httpLogger from '@middlewares/httpLogger';
 import router from '@routes/index';
-import authRoutes from '@routes/auth.routes'
+import authRoutes from '@routes/auth.routes';
+import verificationRoutes from '@routes/verification.routes';
 import { connectDB } from '@utils/db.util';
 import logger from '@utils/logger.util';
+import onboardingRoutes from '@/routes/onboarding.routes';
+import masterRoutes from '@/routes/master.routes';
 const app: express.Application = express();
+
+// Apply CORS before other middleware
+app.use(cors(corsOptions));
 
 app.use(httpLogger);
 app.use(express.json());
@@ -20,7 +28,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/', router);
-app.use('/api/auth', authRoutes)
+app.use('/api/auth', authRoutes);
+app.use('/api/verification', verificationRoutes);
+app.use('/api/onboarding', onboardingRoutes);
+app.use('/api/master', masterRoutes);
 
 // catch 404 and forward to error handler
 app.use((_req, _res, next) => {
@@ -28,15 +39,15 @@ app.use((_req, _res, next) => {
 });
 
 // error handler
-const errorHandler: express.ErrorRequestHandler = (err, _req, res, next) => {  
+const errorHandler: express.ErrorRequestHandler = (err, _req, res, next) => {
   // Log the error stack for debugging
   console.error('Error Stack:', err.stack);
-  
+
   // Make sure headers haven't been sent
   if (res.headersSent) {
     return next(err);
   }
-  
+
   handleError(err, res);
 };
 

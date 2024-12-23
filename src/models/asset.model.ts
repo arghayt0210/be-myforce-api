@@ -1,4 +1,4 @@
-import mongoose, { Document, Model } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 // Define asset type and related model type enums
 type AssetType = 'image' | 'video';
@@ -16,10 +16,7 @@ interface IAsset extends Document {
   updatedAt: Date;
 }
 
-// Interface for Asset Model (if you need static methods later)
-interface IAssetModel extends Model<IAsset> {}
-
-const assetSchema = new mongoose.Schema<IAsset, IAssetModel>(
+const assetSchema = new mongoose.Schema<IAsset>(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -47,9 +44,9 @@ const assetSchema = new mongoose.Schema<IAsset, IAssetModel>(
       type: mongoose.Schema.Types.ObjectId,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-const Asset = mongoose.model<IAsset, IAssetModel>('Asset', assetSchema);
+const Asset = mongoose.model<IAsset>('Asset', assetSchema);
 
 export default Asset;

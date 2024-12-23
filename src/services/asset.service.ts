@@ -68,7 +68,7 @@ export const createMultipleAssets = async ({
 }: CreateMultipleAssetsParams) => {
   try {
     const uploadResults = await multiFileUpload(files, { folder });
-    
+
     const assets = await Asset.insertMany(
       uploadResults.map((result) => ({
         user: userId,
@@ -77,7 +77,7 @@ export const createMultipleAssets = async ({
         asset_type: result.asset_type === 'image' ? 'image' : 'video',
         related_model: relatedModel,
         related_id: relatedId,
-      }))
+      })),
     );
 
     return assets;
@@ -96,7 +96,7 @@ export const deleteAsset = async (assetId: Types.ObjectId) => {
 
     await deleteSingleUpload(asset.public_id);
     await asset.deleteOne();
-    
+
     return { message: 'Asset deleted successfully' };
   } catch (error) {
     logger.error('Asset deletion error:', error);
