@@ -110,7 +110,7 @@ export const register = async (
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'prod',
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
     });
 
@@ -139,7 +139,7 @@ export const logout = async (_req: Request, res: Response, next: NextFunction): 
       httpOnly: true,
       expires: new Date(0), // Expire immediately
       secure: process.env.NODE_ENV === 'prod',
-      sameSite: 'lax',
+      sameSite: 'none',
     });
 
     res.status(200).json({
@@ -185,7 +185,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'prod',
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
     });
 
@@ -382,7 +382,7 @@ export const googleLogin = async (
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'prod',
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
     });
 
