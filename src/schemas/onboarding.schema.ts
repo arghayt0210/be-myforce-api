@@ -5,4 +5,4 @@ export const onboardingSchema = z.object({
   bio: z.string().max(500, 'Bio must not exceed 500 characters'),
 });
 
-export type OnboardingInput = z.infer<typeof onboardingSchema>; 
+export type OnboardingInput = z.infer<typeof onboardingSchema>;

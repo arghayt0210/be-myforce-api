@@ -6,4 +6,4 @@ const router = express.Router();
 
 router.post('/complete', isAuthenticated, isEmailVerified, completeOnboarding);
 
-export default router; 
+export default router;

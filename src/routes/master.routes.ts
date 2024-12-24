@@ -5,4 +5,4 @@ const router = express.Router();
 
 router.get('/interests', getInterests);
 
-export default router; 
+export default router;

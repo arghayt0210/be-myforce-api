@@ -15,7 +15,7 @@ export interface AuthenticatedRequest extends Request {
 export const isAuthenticated = async (
   req: AuthenticatedRequest,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const token = req.cookies.token;
@@ -41,7 +41,7 @@ export const isAuthenticated = async (
 export const isAdmin = async (
   req: AuthenticatedRequest,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const user = await findUserById(req.user?._id as Types.ObjectId);
@@ -57,7 +57,7 @@ export const isAdmin = async (
 export const isEmailVerified = async (
   req: AuthenticatedRequest,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const user = await findUserById(req.user?._id as Types.ObjectId);
@@ -73,7 +73,7 @@ export const isEmailVerified = async (
 export const isOnboarded = async (
   req: AuthenticatedRequest,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const user = await findUserById(req.user?._id as Types.ObjectId);

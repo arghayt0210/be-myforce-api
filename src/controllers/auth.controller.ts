@@ -5,9 +5,17 @@ import { createAsset } from '@/services/asset.service';
 import { sendEmail } from '@/utils/email.util';
 import { generateToken } from '@/utils/jwt.util';
 import { ErrorHandler } from '@/helpers/error';
-import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from '@/schemas/auth.schema';
+import {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '@/schemas/auth.schema';
 import { AuthenticatedRequest } from '@/middlewares/auth.middleware';
 import crypto from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const register = async (
   req: Request & { file?: Express.Multer.File },
@@ -125,33 +133,25 @@ export const register = async (
   }
 };
 
-export const logout = async (
-  _req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const logout = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     res.cookie('token', '', {
       httpOnly: true,
       expires: new Date(0), // Expire immediately
       secure: process.env.NODE_ENV === 'prod',
-      sameSite: 'strict'
+      sameSite: 'strict',
     });
 
     res.status(200).json({
       success: true,
-      message: 'Logged out successfully'
+      message: 'Logged out successfully',
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const login = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const result = loginSchema.safeParse(req.body);
 
@@ -161,7 +161,7 @@ export const login = async (
         new ErrorHandler(400, 'Validation failed', {
           field: error.path[0],
           message: error.message,
-        })
+        }),
       );
     }
 
@@ -179,7 +179,7 @@ export const login = async (
 
     const token = generateToken({
       _id: user._id as Types.ObjectId,
-      user_type: user.user_type
+      user_type: user.user_type,
     });
 
     res.cookie('token', token, {
@@ -199,7 +199,7 @@ export const login = async (
         profile_image: user.profile_image,
         is_email_verified: user.is_email_verified,
         user_type: user.user_type,
-        is_onboarded: user.is_onboarded
+        is_onboarded: user.is_onboarded,
       },
     });
   } catch (error) {
@@ -210,18 +210,18 @@ export const login = async (
 export const getCurrentUser = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const user = await User.findById(req.user?._id).select('-password');
-    
+
     if (!user) {
       return next(new ErrorHandler(404, 'User not found'));
     }
 
     res.status(200).json({
       success: true,
-      user
+      user,
     });
   } catch (error) {
     next(error);
@@ -231,7 +231,7 @@ export const getCurrentUser = async (
 export const forgotPassword = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const result = forgotPasswordSchema.safeParse(req.body);
@@ -241,7 +241,7 @@ export const forgotPassword = async (
         new ErrorHandler(400, 'Validation failed', {
           field: error.path[0],
           message: error.message,
-        })
+        }),
       );
     }
 
@@ -252,10 +252,7 @@ export const forgotPassword = async (
 
     // Generate reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
-    user.reset_password_token = crypto
-      .createHash('sha256')
-      .update(resetToken)
-      .digest('hex');
+    user.reset_password_token = crypto.createHash('sha256').update(resetToken).digest('hex');
     user.reset_password_expires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
 
     await user.save();
@@ -282,7 +279,7 @@ export const forgotPassword = async (
 export const resetPassword = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const result = resetPasswordSchema.safeParse(req.body);
@@ -292,17 +289,14 @@ export const resetPassword = async (
         new ErrorHandler(400, 'Validation failed', {
           field: error.path[0],
           message: error.message,
-        })
+        }),
       );
     }
 
     const { token, password } = result.data;
 
     // Hash token to compare with stored hash
-    const resetPasswordToken = crypto
-      .createHash('sha256')
-      .update(token)
-      .digest('hex');
+    const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
 
     const user = await User.findOne({
       reset_password_token: resetPasswordToken,
@@ -330,6 +324,80 @@ export const resetPassword = async (
     res.status(200).json({
       success: true,
       message: 'Password reset successful',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const googleLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { credential } = req.body;
+    console.log('342: ', credential);
+
+    // Verify Google token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+      throw new ErrorHandler(400, 'Invalid Google token');
+    }
+
+    const { email, name, sub: googleId, picture } = payload;
+
+    // Find or create user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user
+      const username = `user_${crypto.randomBytes(4).toString('hex')}`;
+      user = await User.create({
+        email,
+        full_name: name,
+        username,
+        google_id: googleId,
+        profile_image: picture,
+        is_email_verified: true, // Google emails are pre-verified
+      });
+    } else if (!user.google_id) {
+      // Link Google account to existing email user
+      user.google_id = googleId;
+      await user.save();
+    }
+
+    // Generate JWT token
+    const token = generateToken({
+      _id: user._id as Types.ObjectId,
+      user_type: user.user_type,
+    });
+
+    // Set HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'prod',
+      sameSite: 'strict',
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+    });
+
+    res.status(200).json({
+      success: true,
+      user: {
+        _id: user._id,
+        full_name: user.full_name,
+        username: user.username,
+        email: user.email,
+        profile_image: user.profile_image,
+        is_email_verified: user.is_email_verified,
+        user_type: user.user_type,
+        is_onboarded: user.is_onboarded,
+      },
     });
   } catch (error) {
     next(error);

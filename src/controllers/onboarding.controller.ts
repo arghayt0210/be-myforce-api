@@ -9,7 +9,7 @@ import { Types } from 'mongoose';
 export const completeOnboarding = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const result = onboardingSchema.safeParse(req.body);
@@ -20,7 +20,7 @@ export const completeOnboarding = async (
         new ErrorHandler(400, 'Validation failed', {
           field: error.path.join('.'),
           message: error.message,
-        })
+        }),
       );
     }
 
@@ -30,7 +30,7 @@ export const completeOnboarding = async (
     }
 
     // Update user with onboarding data
-    user.interests = result.data.interests.map(id => new Types.ObjectId(id));
+    user.interests = result.data.interests.map((id) => new Types.ObjectId(id));
     user.bio = result.data.bio;
     user.is_onboarded = true;
 
@@ -42,7 +42,7 @@ export const completeOnboarding = async (
       template: 'onboardingComplete',
       data: {
         userName: user.full_name,
-        interests: user.interests.map(id => id.toString()),
+        interests: user.interests.map((id) => id.toString()),
       },
     });
 
@@ -65,4 +65,4 @@ export const completeOnboarding = async (
   } catch (error) {
     next(error);
   }
-}; 
+};
